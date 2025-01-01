@@ -1,0 +1,707 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>營養日誌</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #FFFCEC;
+        }
+
+        .container {
+            max-width: 280px;
+            margin: 10px auto;
+            background-color: #FFFFFF;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            font-size: 1.5em;
+            color: #4a473e;
+            margin-bottom: 20px;
+            text-align: center;
+            position: relative;
+        }
+
+        /* 添加黑色框線 */
+		h1::after {
+		 content: '';
+            position: absolute;
+            left: 0;
+            right: 0;
+            bottom: -10px;
+            height: 1px;
+            background-color:#8a817c;
+            border-radius: 1px;
+            
+        }
+
+        .wave {
+            text-align: center;
+            font-size: 1em;
+            margin: 10px 0;
+        }
+
+        .section {
+            margin-bottom: 10px;
+        }
+
+        .section h2 {
+            font-size: 1em;
+            color: #4a473e;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+
+        .date-range {
+            display: flex;
+            justify-content: space-between; /* 左右排列 */
+        }
+
+        .date-range input {
+            padding: 5px;
+            font-size: 0.8em;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+		.section-flex {
+		  display: flex;
+		  justify-content: center;
+		}
+		button {
+			width: 35%;
+			padding: 10px;
+			background-color: #8a817c;
+			color: white;
+			border: none;
+			border-radius: 5px;
+			cursor: pointer;
+			font-size: 14px;
+			margin-bottom: 10px;
+			margin-top: 10px;
+		}
+
+        .chart-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-around;
+        }
+
+        .chart-box {
+            width: 45%; /* 兩個並排顯示 */
+            max-width: 400px;
+            margin: 0px;
+        }
+		
+		.chart-info {
+			font-size: 14px;
+			color: #333;
+			font-weight: bold;
+		}
+
+
+        canvas {
+            width: 200%; /* 圓圈變大 */
+            height: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        table, th, td {
+            border: 1px solid #ddd;
+        }
+
+        th, td {
+            padding: 8px;
+            text-align: center;
+			font-size: 10px;
+        }
+
+        th {
+            background-color: #8a817c;
+            color: white;
+        }
+
+        /* 隱藏類別 */
+		.hidden {
+			display: none;
+		}
+
+		/* nutrition-box 預設樣式 */
+		.nutrition-box {
+			flex-direction: column;
+			align-items: center;
+			border: 2px dashed #ccc;
+			border-radius: 10px;
+			padding: 12px 10px;
+			background-color: #f9f9f9;
+			text-align: center;
+		}
+
+		/* 調整內容的文字樣式 */
+		.nutrition-item {
+			margin: 0px 0;
+			font-size: 12px;
+			white-space: nowrap; /* 確保文字單行顯示 */
+			line-height: 0.8;    /* 調整行高讓文字垂直居中 */
+		}
+		.nutrition-item span {
+			display: inline-block;
+			width: 50px;
+		}
+		.nutrition-value {
+			background-color: #FFF; /* 默認白色 */
+			padding: 10px 5px;
+			margin: 20px 0px;
+			border-radius: 20px;
+			font-weight: bold;
+			text-align: center;
+			color: #000; /* 默認黑色文字 */
+			transition: background-color 0.3s, color 0.3s; /* 平滑過渡效果 */
+		}
+
+		
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+	<script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+</head>
+<body>
+<div class="container">
+        <h1>營養日誌</h1>
+		<form id="date-form">
+			<!-- 第一部分：選擇時間區間 -->
+			<div class="section">
+				<h2>請選擇時間區間</h2>
+					<div class="date-range">
+						<input type="date" id="startDate" placeholder="開始日期">
+						<div class="wave">~</div>
+						<input type="date" id="endDate" placeholder="結束日期">
+						<input type="hidden" id="line_user_id" name="line_user_id" value="">		
+					</div>
+				<div class="section-flex">
+					<button id="submitDateRange" onclick="submitDates()">確認</button> <!-- 確認按鈕與日期輸入框同列，右對齊 -->
+				</div>
+			</div>
+		</form>
+
+		
+		<!-- 第二部分：三大營養素熱量佔比 -->
+		<div class="nutrition-box hidden">
+			<div class="section chart-section">
+				<h2>三大營養素熱量占比圓餅圖</h2>
+				<div class="nutrition-item">
+					<br><u><b>每日建議熱量攝取</b></u><b> ／ </b><u><b>期間內日平均熱量攝取</b></u>
+					<br><br><span class="nutrition-value" id="nutrients_list_index7"></span><b> ／ </b><span class="nutrition-value" id="nutrients_list_index0"></span>　<b>大卡</b>
+				</div>
+				<canvas id="myPieChart" width="400" height="400"></canvas>
+				<p style="text-align: center; margin-top: 10px; font-size: 0.5em; color: #4a473e;">
+					<a href="https://www.hpa.gov.tw/Pages/Detail.aspx?nodeid=4248&pid=12285" target="_blank" style="color: #333; text-decoration: underline;">
+						DRIs 建議三大營養素占比總熱量
+					</a>
+					<br>蛋白質：15%-20%、脂質：20%-30%、碳水化合物(醣類)：50%-65%
+				</p>
+			</div>
+		</div>
+
+        <!-- 第二部分：六大類食物的圓圈圖 -->
+        <div class="section chart-section hidden">
+            <h2>六大類食物攝取圖(建議份數)</h2>
+            <div class="chart-container">
+                <div class="chart-box">
+                    <canvas id="grainsChart"></canvas>
+                </div>
+                <div class="chart-box">
+                    <canvas id="proteinChart"></canvas>
+                </div>
+                <div class="chart-box">
+                    <canvas id="milkChart"></canvas>
+                </div>
+                <div class="chart-box">
+                    <canvas id="vegetablesChart"></canvas>
+                </div>
+                <div class="chart-box">
+                    <canvas id="fruitsChart"></canvas>
+                </div>
+                <div class="chart-box">
+                    <canvas id="oilChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- 第三部分：顯示使用者輸入的餐食資料 -->
+        <div class="section meal-section hidden">
+            <h2>飲食記錄</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th style="width: 27%;">日期</th>
+                        <th style="width: 2%;">餐別</th>
+                        <th style="width: 71%;">飲食紀錄</th>
+                    </tr>
+                </thead>
+                <tbody id="mealData">
+                    <!-- 使用者輸入的資料將動態顯示於此處 -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+	
+	// 儲存圖表實例的物件
+	let chartInstances = {
+		nutrient: null,
+		foodCategory: {}
+	};
+	
+	function updateNutritionValueStyles(average, recommended) {
+		// 獲取每日建議值和每日平均值
+		const recommendedCalories = recommended; // 建議值
+		const averageCalories = average; // 每日平均值
+
+		// 計算正常攝取範圍
+		const lowerLimit = recommendedCalories * 0.8;
+		const upperLimit = recommendedCalories * 1.2;
+
+		// 獲取所有 nutrition-value 的元素
+		const nutritionValues = document.querySelectorAll('.nutrition-value');
+
+		// 檢查每日平均值的範圍，並設置顏色
+		nutritionValues.forEach((element, index) => {
+			if (index === 0) {
+				// 第一個是建議值，保持默認樣式
+				element.style.backgroundColor = '#FFF'; // 白色
+				element.style.color = '#000'; // 黑色文字
+			} else if (index === 1) {
+				// 第二個是每日平均值，比對正常範圍
+				if (averageCalories < lowerLimit) {
+					//element.style.backgroundColor = ' #E0E0E0 '; // 灰色
+					element.style.color = '#006000'; // 綠色
+				} else if (averageCalories > upperLimit) {
+					//element.style.backgroundColor = '#FFB5B5'; // 紅色
+					element.style.color = '#AE0000'; // 紅色
+				} else {
+					//element.style.backgroundColor = '#DFFFDF'; // 綠色
+					element.style.color = '#000'; // 黑色
+				}
+			}
+		});
+	}
+
+	// 建立三大營養圓餅圖
+	function createNutrientPieChart(nutrientData) {
+		const ctx = document.getElementById('myPieChart').getContext('2d');
+
+		if (chartInstances.nutrient) {
+			chartInstances.nutrient.destroy();
+		}
+
+		const labels = nutrientData.map(item => item.name);
+		const data = nutrientData.map(item => item.percentage);
+		const backgroundColors = ['#C4E1FF', '#ff9797', '#ffdd9e'];
+
+		chartInstances.nutrient = new Chart(ctx, {
+			type: 'pie',
+			data: {
+				labels: labels,
+				datasets: [{
+					label: '平均熱量占比(%)',
+					data: data,
+					backgroundColor: backgroundColors
+				}]
+			},
+			options: {
+				responsive: true,
+				maintainAspectRatio: true,
+				plugins: {
+					legend: {
+						display: true,
+						position: 'top',
+						labels: {
+							usePointStyle: true,
+							padding: 5
+						}
+					},
+					tooltip: {
+						displayColors: true, // 保留顏色框
+						callbacks: {
+							label: function(tooltipItem) {
+								const index = tooltipItem.dataIndex;
+								const nutrient = nutrientData[index];
+								return [
+									`${nutrient.name}:`,
+									`每日建議攝取: ${nutrient.recommended_min} ~ ${nutrient.recommended_max} (g)`,
+									`實際攝取平均: ${nutrient.average} (g)`,
+									`與總熱量占比: ${nutrient.percentage} (%)`
+								]; // 每行作為一個元素
+							}
+						},
+						backgroundColor: 'rgba(0, 0, 0, 0.8)', // 背景色
+						titleFont: {
+							size: 14 // 提示框標題字體大小
+						},
+						bodyFont: {
+							size: 12 // 提示框內容字體大小
+						},
+						padding: 10, // 內邊距
+						boxPadding: 5, // 顏色框與文字的間距
+						caretSize: 8 // 指示箭頭的大小
+					}
+				}
+			}
+		});
+	}
+
+
+
+	// 創建單一 Doughnut 圖表
+	function createChart(ctx, label, color, recommended, average) {
+		const canvasId = ctx.canvas.id;
+
+		// 檢查並銷毀舊的圖表實例，避免重複繪製
+		if (chartInstances.foodCategory[canvasId]) {
+			chartInstances.foodCategory[canvasId].destroy();
+		}
+
+		// 計算攝入百分比和未攝入百分比
+		const intakePercentage = average / recommended * 100;
+		const adjustedIntake = Math.max(0, Math.min(100, intakePercentage));
+		const remainingPercentage = 100 - adjustedIntake;
+
+		// 檢查是否超過攝取
+		const exceededPercentage = Math.max(0, ((average - recommended) / recommended) * 100);
+		const exceededIntake = Math.max(0, average - recommended);
+
+		// 配置 Doughnut 圖表
+		let chartConfig;
+
+		if (average <= recommended) {
+			// 情況 1：已攝取百分比 < 100
+			chartConfig = {
+				type: 'doughnut',
+				data: {
+					labels: ['已攝取份數', '未攝取份數'],
+					datasets: [{
+						label: label,
+						data: [adjustedIntake, remainingPercentage],
+						backgroundColor: [color, '#f4f1ea'],
+						borderWidth: 3,
+						borderColor: '#f4f1ea',
+						hoverOffset: 4
+					}]
+				},
+				options: {
+					responsive: true,
+					maintainAspectRatio: false,
+					plugins: {
+						legend: {
+							display: true,
+							position: 'top',
+							labels: {
+								usePointStyle: true,
+								font: {
+									size: 10
+								}
+							}
+						},
+						tooltip: {
+							callbacks: {
+								label: function (tooltipItem) {
+									const dataIndex = tooltipItem.dataIndex;
+									if (dataIndex === 0) {
+										// 已攝取部分
+										return [
+											`已攝取: ${average} (份)`,
+											`換算為: ${adjustedIntake.toFixed(1)} (%)`
+										];
+									} else {
+										// 未攝取部分
+										const remaining = recommended - average;
+										return [
+											`未攝取: ${remaining.toFixed(1)} (份)`,	
+											`換算為: ${remainingPercentage.toFixed(1)} (%)`
+										];
+									}
+								}
+							}
+						},
+						title: {
+							display: true,
+							text: label,
+							font: {
+								size: 12
+							}
+						}
+					}
+				}
+			};
+		} else if (intakePercentage > 100 && exceededPercentage < 100) {
+			// 情況 2：已攝取百分比 > 100，未超過攝取完全覆蓋
+			chartConfig = {
+				type: 'doughnut',
+				data: {
+					labels: ['已攝取份數', '超過攝取份數'],
+					datasets: [{
+						label: label,
+						data: [100, exceededPercentage],
+						backgroundColor: [color, '#CE0000'],
+						borderWidth: 3,
+						borderColor: '#f4f1ea',
+						hoverOffset: 4
+					}]
+				},
+				options: {
+					responsive: true,
+					maintainAspectRatio: false,
+					plugins: {
+						legend: {
+							display: true,
+							position: 'top',
+							labels: {
+								usePointStyle: true,
+								font: {
+									size: 10
+								}
+							}
+						},
+						tooltip: {
+							callbacks: {
+								label: function (tooltipItem) {
+									const dataIndex = tooltipItem.dataIndex;
+									if (dataIndex === 0) {
+										// 已攝取部分
+										return [
+											`已攝取: ${recommended} (份)`,	
+											`換算為: 100 (%)`
+										];
+									} else {
+										// 超過攝取部分
+										return [
+											`超過攝取: ${exceededIntake.toFixed(1)} (份)`,	
+											`換算為: ${exceededPercentage.toFixed(1)} (%)`
+										];
+									}
+								}
+							}
+						},
+						title: {
+							display: true,
+							text: label,
+							font: {
+								size: 12
+							}
+						}
+					}
+				}
+			};
+		} else {
+			// 情況 3：超過攝取 > 100%
+			chartConfig = {
+				type: 'doughnut',
+				data: {
+					labels: ['超過攝取份數'],
+					datasets: [{
+						label: label,
+						data: [exceededPercentage],
+						backgroundColor: ['#CE0000'],
+						borderWidth: 3,
+						borderColor: '#f4f1ea',
+						hoverOffset: 4
+					}]
+				},
+				options: {
+					responsive: true,
+					maintainAspectRatio: false,
+					plugins: {
+						legend: {
+							display: true,
+							position: 'top',
+							labels: {
+								usePointStyle: true,
+								font: {
+									size: 10
+								}
+							}
+						},
+						tooltip: {
+							callbacks: {
+								label: function () {
+									//return `已超過: ${exceededIntake.toFixed(1)} 份\n(${exceededPercentage.toFixed(1)}%)`;
+									return [
+											`超過攝取: ${exceededIntake.toFixed(1)} (份)`,	
+											`換算為: ${exceededPercentage.toFixed(1)} (%)`
+											];
+								}
+							}
+						},
+						title: {
+							display: true,
+							text: label,
+							font: {
+								size: 12
+							}
+						}
+					}
+				}
+			};
+		}
+
+		// 創建圖表
+		chartInstances.foodCategory[canvasId] = new Chart(ctx, chartConfig);
+	}
+
+
+	
+	// 創建六大類食物的圓圈圖
+	function createFoodCategoryCharts(charts) {
+
+		charts.forEach(chart => {
+			const canvas = document.getElementById(chart.id);
+			if (!canvas) {
+				console.error(`Canvas element with ID '${chart.id}' not found.`);
+				return;
+			}
+			const ctx = canvas.getContext('2d');
+			createChart(ctx, chart.label, chart.color, chart.recommended, chart.average);
+		});
+	}
+	
+
+	// 驗證整個表單，並阻止有錯誤時的提交
+	function validateForm(startDate, endDate) {
+		// 檢查日期(開始與結束日)是否有值
+		if (!startDate || !endDate) {
+			alert('請選擇完整的日期區間');
+			return false;
+		}
+
+		// 檢查開始日期不能晚於結束日期
+		if (new Date(startDate) > new Date(endDate)) {
+			alert('開始日期不能晚於結束日期');
+			return false;
+		}
+
+		return true; // 所有驗證通過，允許提交表單
+	}
+	
+	const line_user_id_input = document.getElementById('line_user_id');
+		
+	// 初始化 LIFF
+	async function initializeLiff() {
+		try {
+			await liff.init({ liffId: '2006163998-2r4nYRNq' });
+				
+			if (!liff.isLoggedIn()) {
+				liff.login();
+				return; // 登入後會自動重新整理
+			}
+
+			const profile = await liff.getProfile();
+			line_user_id_input.value = profile.userId;
+		} catch (error) {
+			console.error("LIFF 初始化失敗:", error);
+		}
+	}
+		
+	// 表單提交並與後端通訊
+	async function submitDates() {
+		// 取得開始日期和結束日期
+		const startDate = document.getElementById('startDate').value;
+		//const endDate = document.getElementById('endDate').value;
+		const endDate = document.getElementById('endDate').value || new Date().toISOString().split('T')[0];
+
+		// 驗證日期
+		if (!validateForm(startDate, endDate)) {
+			return; // 驗證失敗，停止提交
+		}
+		event.preventDefault()
+			
+
+		console.log("startDate",startDate);
+		console.log("endDate",endDate);
+		try {
+			const response = await fetch('/submit-dates', {
+				method: 'POST',
+				headers: {
+					"Content-Type": "application/json"
+				},
+				body: JSON.stringify({ start_date: startDate, end_date: endDate, line_user_id: line_user_id_input.value })
+			});
+
+			const result = await response.json();
+			console.log(result);
+			
+			// 檢查是否獲取到足夠的數據
+			if (result && result.nutrients_list && result.nutrients_list.length > 7) {
+				// 顯示所有圖表和飲食記錄
+				document.querySelectorAll('.hidden').forEach(el => el.classList.remove('hidden')); // 顯示隱藏的區域
+				
+				// 更新 HTML 元素的內容
+				// [三大類營養素圖表]
+				document.getElementById('nutrients_list_index0').textContent = result.nutrients_list[0];
+				document.getElementById('nutrients_list_index7').textContent = result.nutrients_list[7];
+				updateNutritionValueStyles(result.nutrients_list[0], result.nutrients_list[7]);
+				const nutrientData = [
+					{ name: '蛋白質', percentage: result.nutrients_list[4], average: result.nutrients_list[1],
+					recommended_min: result.nutrients_list[8], recommended_max: result.nutrients_list[9] },
+					{ name: '脂質', percentage: result.nutrients_list[6], average: result.nutrients_list[3], 
+					recommended_min: result.nutrients_list[12], recommended_max: result.nutrients_list[13]  },
+					{ name: '醣類', percentage: result.nutrients_list[5], average: result.nutrients_list[2], 
+					recommended_min: result.nutrients_list[10], recommended_max: result.nutrients_list[11]  }
+				];
+				// 創建三大營養素圖表
+				createNutrientPieChart(nutrientData)
+				
+				// [六大類食物圖表]
+				
+				const charts = [
+					{ id: 'grainsChart', label: '全穀雜糧類('+result.food_list[0]+'份)', color: '#ffdd9e', recommended: result.food_list[0], average: result.food_list[1] },
+					{ id: 'proteinChart', label: '蛋豆魚肉類('+result.food_list[2]+'份)', color: '#ff9797', recommended: result.food_list[2], average: result.food_list[3]},
+					{ id: 'milkChart', label: '乳品類('+result.food_list[4]+'份)', color: '#ccf5ff', recommended: result.food_list[4], average: result.food_list[5]},
+					{ id: 'vegetablesChart', label: '蔬菜類('+result.food_list[6]+'份)', color: '#9ae59a', recommended: result.food_list[6], average: result.food_list[7]},
+					{ id: 'fruitsChart', label: '水果類('+result.food_list[8]+'份)', color: '#ffcce0', recommended: result.food_list[8], average: result.food_list[9]},
+					{ id: 'oilChart', label: '油脂與堅果種子類('+result.food_list[10]+'份)', color: '#dfcbbb', recommended: result.food_list[10], average: result.food_list[11]}
+				];
+				createFoodCategoryCharts(charts); // 創建所有六大類圖表
+				
+				// [飲食紀錄]
+				renderMealData(result.records_list);
+				
+			}
+		} catch (error) {
+			console.error('表單提交失敗:', error);
+			alert('系統錯誤，請稍後再試。');
+		}
+	}
+
+	// 頁面加載後初始化 LIFF
+	// 在 DOM 加載後執行更新樣式函數
+	document.addEventListener('DOMContentLoaded', () => {
+		initializeLiff();
+	});
+
+	// 動態顯示飲食記錄
+	function renderMealData(mealData) {
+		const tableBody = document.getElementById('mealData');
+		const rowsHtml = mealData.map(meal => `
+			<tr>
+				<td>${meal.date}</td>
+				<td>${meal.meal_type}</td>
+				<td>${meal.input_text}</td>
+			</tr>
+		`).join('');
+		tableBody.innerHTML = rowsHtml;
+	}
+    </script>
+</body>
+</html>

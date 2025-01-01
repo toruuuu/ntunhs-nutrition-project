@@ -1,0 +1,610 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+      body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #FFFCEC;
+        }
+
+        .container {
+            max-width:250px;
+            margin: 50px auto;
+            background-color: #FFFFFF;
+            padding: 50px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            font-size: 1.2em;
+            color: #4a473e;
+            margin-bottom: 1em;
+            text-align: center;
+        }
+
+        input[type="text"], input[type="password"], input[type="email"], input[type="number"] {
+            width: 94%;
+            padding: 10px;
+            margin: 5px 0;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        .form-section {
+            text-align: left;
+            margin: 10px 0;
+            position: relative;
+        }
+
+        .form-section label {
+            display: block;
+            margin-bottom: 5px;
+            color: #4a473e;
+        }
+
+        .input-container {
+            position: relative;
+        }
+
+
+        .input-container label {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            display: flex;
+            align-items: center;
+        }
+
+        .input-container label input[type="checkbox"] {
+            margin-right: 5px; /* 勾選框和顯示密碼文字之間的間距 */
+        }
+
+        button {
+            width: 100%;
+            padding: 10px;
+            background-color: #8a817c;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        button:hover {
+            background-color: #746e68;
+        }
+
+		table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 10px;
+            font-size: 10px;
+            background-color: #FFF; /* 表格背景色 */
+            border: 2px solid #ccc;
+        }
+        th, td {
+            border: 2px solid #ccc;
+            padding: 5px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #f2ebdd;
+            color: #4d4d4d;
+        }
+
+        .error {
+            color: red;
+            font-size: 0.5em;
+            display: none;
+        }
+
+        .underline {
+            border-bottom: 1px solid #ccc;
+            display: inline-block;
+            width: 94%;
+            padding: 10px;
+            margin: 10px 0;
+            background-color: #f9f9f9;
+        }
+		.form-check-inline {
+            display: flex;
+            align-items: center;
+            margin-bottom: 5px; /* 控制上下間隔 */
+        }
+
+        .form-check-inline label {
+            margin-left: 5px; /* 勾選框與文字之間的距離 */
+        }
+
+        #other-allergen, #other-preference {
+            display: none;
+            margin-top: 10px;
+        }
+		a {
+            display: block;
+            text-align: center;
+            color: #4a473e;
+            margin-top:20px;
+        }
+    </style>
+    <title>註冊</title>
+</head>
+<body>
+<div class="container">
+    <h1>BALANCE DIET 註冊</h1>
+    <form action="https://{ngrok_url}/submit-register" method="POST">
+
+        <div class="form-section">
+            <label for="phone">使用者帳號：</label>
+            <input type="text" id="phone" name="phone" placeholder="請填入手機號碼 (ex: 09XXXXXXXX)" required>
+            <span class="error" id="phone-error">手機號碼格式不正確</span>
+        </div>
+
+        <div class="form-section">
+            <label for="email">電子信箱：</label>
+            <input type="email" id="email" name="email" placeholder="請輸入電子郵件" required>
+            <span class="error" id="email-error">電子郵件格式不正確</span>
+        </div>
+
+        <!-- 密碼欄位與顯示密碼勾選框在輸入框內右側 -->
+        <div class="form-section">
+            <label for="password">密碼：</label>
+            <div class="input-container">
+                <input type="password" id="password" name="password" placeholder="請輸入密碼" required>
+                <label for="show-password-1">
+                    顯示密碼
+                    <input type="checkbox" id="show-password-1">
+                </label>
+            </div>
+            <span class="error" id="password-error">密碼需包含6-30字元，且至少包含一個大寫字母、小寫字母及特殊符號</span>
+        </div>
+
+        <div class="form-section">
+            <label for="confirm-password">確認密碼：</label>
+            <div class="input-container">
+                <input type="password" id="confirm-password" name="confirm-password" placeholder="請再次輸入密碼" required>
+                <label for="show-password-2">
+                    顯示密碼
+                    <input type="checkbox" id="show-password-2">
+                </label>
+            </div>
+            <span class="error" id="confirm-password-error">確認密碼不一致</span>
+        </div>
+
+
+        <div class="form-section">
+            <label for="realname">姓名：</label>
+            <input type="text" id="realname" name="realname" placeholder="請輸入真實名字" required>
+        </div>
+		<div class="form-section">
+			<label for="id-number">身份證字號：</label>
+			<input type="text" id="id-number" name="id-number" placeholder="請輸入身份證字號" required>
+			<span class="error" id="id-number-error">身份證字號格式不正確，應為首字英文大寫，第二字1或2，後八碼為數字</span>
+		</div>
+		<div class="form-section">
+    <label for="gender">性別：</label>
+    <div class="form-check form-check-inline">
+        <input class="form-check-input" type="radio" id="gender-male" name="gender" value="male" required>
+        <label class="form-check-label" for="gender-male">男性</label>
+    </div>
+    <div class="form-check form-check-inline">
+        <input class="form-check-input" type="radio" id="gender-female" name="gender" value="female" required>
+        <label class="form-check-label" for="gender-female">女性</label>
+    </div>
+</div>
+
+
+        <div class="form-section">
+            <label for="birthdate">出生年月日：</label>
+            <input type="date" id="birthdate" name="birthdate" required>
+            <div class="underline" id="age">年齡：<span id="calculated-age"></span></div>
+        </div>
+
+        <div class="form-section">
+            <label for="height">身高 (公分)：</label>
+            <input type="number" id="height" name="height" required>
+        </div>
+
+        <div class="form-section">
+            <label for="weight">體重 (公斤)：</label>
+            <input type="number" id="weight" name="weight" required>
+        </div>
+
+        <div class="underline">
+            <label for="bmi">BMI：<span id="bmi"></span></label>
+        </div>
+
+        <label for="activity-level-description"><strong>活動量描述:</strong></label>
+        <table>
+            <tr>
+                <th>#</th>
+                <th>選項</th>
+                <th>選項描述</th>
+            </tr>
+            <tr>
+                <td>0</td>
+                <td>低</td>
+                <td>大部分時間為靜態活動，例如:睡覺、靜臥或悠閒地坐著看書、看電視、談話等，並有約1小時的悠閒步行活動，例如:散步、購物。</td>
+            </tr>
+            <tr>
+                <td>1</td>
+                <td>稍低</td>
+                <td>大部分時間坐著，有部分時間會站著，例如:站著說話、通勤、做家事等，另外會有約4~5個小時的時間因為工作或通勤等而需要步行。</td>
+            </tr>
+            <tr>
+                <td>2</td>
+                <td>適中</td>
+                <td>大部分時間站立或以正常速度步行，例如:通勤、做家事、散步、購物等，並有約1小時以較快速度活動，例如:快走、騎腳踏車、工作等。</td>
+            </tr>
+            <tr>
+                <td>3</td>
+                <td>高</td>
+                <td>從事重物搬運、農漁業等站立姿勢且活動強度較強的工作，或身體活動程度較正常速度快或激烈的活動，例如:上下樓梯、有氧運動、游泳、登山、運動訓練等。</td>
+            </tr>
+        </table>
+		
+	<label>活動量選擇：</label>
+        <div>
+            <input type="radio" id="activity-level-0" name="activity-level" value="0" required>
+            <label for="activity-level-0">0. 低</label>
+            <input type="radio" id="activity-level-1" name="activity-level" value="1" required>
+            <label for="activity-level-1">1. 稍低</label>
+            <input type="radio" id="activity-level-2" name="activity-level" value="2" required>
+            <label for="activity-level-2">2. 適中</label>
+            <input type="radio" id="activity-level-3" name="activity-level" value="3" required>
+            <label for="activity-level-3">3. 高</label>
+        </div>
+
+<!-- 過敏源 -->
+        <div class="form-section">
+            <label for=""><strong>過敏源：</strong></label>
+            <div class="form-group" id="itemsdateAllergen">
+			       <div class="form-check form-check-inline">
+                    <input class="form-check-input" type="checkbox" id="allergen" name="allergens" value="無">
+                    <label class="form-check-label" for="allergen0">無</label>
+                </div>
+                <div class="form-check form-check-inline">
+                    <input class="form-check-input" type="checkbox" id="allergen1" name="allergens1" value="甲殼類" >
+                    <label class="form-check-label" for="allergen0">甲殼類</label>
+                </div>
+                <div class="form-check form-check-inline">
+                    <input class="form-check-input" type="checkbox" id="allergen2" name="allergens2" value="芒果" >
+                    <label class="form-check-label" for="allergen1">芒果</label>
+                </div>
+                <div class="form-check form-check-inline">
+                    <input class="form-check-input" type="checkbox" id="allergen3" name="allergens3" value="花生" >
+                    <label class="form-check-label" for="allergen2">花生</label>
+                </div>
+                <div class="form-check form-check-inline">
+                    <input class="form-check-input" type="checkbox" id="allergen4" name="allergens4" value="乳製品" >
+                    <label class="form-check-label" for="allergen3">乳製品</label>
+                </div>
+                <div class="form-check form-check-inline">
+                    <input class="form-check-input" type="checkbox" id="allergen5" name="allergens5" value="蛋製品" >
+                    <label class="form-check-label" for="allergen4">蛋製品</label>
+                </div>
+                <div class="form-check form-check-inline">
+                    <input class="form-check-input" type="checkbox" id="allergen6" name="allergens6" value="堅果類" >
+                    <label class="form-check-label" for="allergen5">堅果類</label>
+                </div>
+                <div class="form-check form-check-inline">
+                    <input class="form-check-input" type="checkbox" id="allergen7" name="allergens7" value="芝麻類製品" >
+                    <label class="form-check-label" for="allergen6">芝麻類製品</label>
+                </div>
+                <div class="form-check form-check-inline">
+                    <input class="form-check-input" type="checkbox" id="allergen8" name="allergens8" value="麩質" >
+                    <label class="form-check-label" for="allergen7">麩質</label>
+                </div>
+                <div class="form-check form-check-inline">
+                    <input class="form-check-input" type="checkbox" id="allergen9" name="allergens9" value="大豆" >
+                    <label class="form-check-label" for="allergen8">大豆</label>
+                </div>
+                <div class="form-check form-check-inline">
+                    <input class="form-check-input" type="checkbox" id="allergen10" name="allergens10" value="魚類" >
+                    <label class="form-check-label" for="allergen9">魚類</label>
+                </div>
+                <div class="form-check form-check-inline">
+                    <input class="form-check-input" type="checkbox" id="allergen11" name="allergens11" value="亞硫酸鹽類" >
+                    <label class="form-check-label" for="allergen10">亞硫酸鹽類</label>
+                </div>
+                <div class="form-check form-check-inline">
+                    <input class="form-check-input" type="checkbox" id="allergen12" name="allergens12" value="其他" >
+                    <label class="form-check-label" for="allergen11">其他</label>
+                </div>
+                <input type="text" id="other-allergen" name="other-allergen" placeholder="請輸入其他過敏源，用逗號分隔">
+            </div>
+        </div>
+		
+		<!-- 飲食偏好 -->
+        <div class="form-section">
+            <label for=""><strong>飲食偏好：</strong></label>
+            <div class="form-group" id="itemsdatePreference">
+			      <div class="form-check form-check-inline">
+                    <input class="form-check-input" type="checkbox" id="preference0" name="preferences0" value="無">
+                    <label class="form-check-label" for="preference0">無</label>
+                </div>
+                <div class="form-check form-check-inline">
+                    <input class="form-check-input" type="checkbox" id="preference1" name="preferences1" value="飯">
+                    <label class="form-check-label" for="preference0">飯</label>
+                </div>
+                <div class="form-check form-check-inline">
+                    <input class="form-check-input" type="checkbox" id="preference2" name="preferences2" value="面">
+                    <label class="form-check-label" for="preference1">麵</label>
+                </div>
+                <div class="form-check form-check-inline">
+                    <input class="form-check-input" type="checkbox" id="preference3" name="preferences3" value="點心">
+                    <label class="form-check-label" for="preference2">點心</label>
+                </div>
+                <div class="form-check form-check-inline">
+                    <input class="form-check-input" type="checkbox" id="preference4" name="preferences4" value="沙拉">
+                    <label class="form-check-label" for="preference3">沙拉</label>
+                </div>
+                <div class="form-check form-check-inline">
+                    <input class="form-check-input" type="checkbox" id="preference5" name="preferences5" value="飲料">
+                    <label class="form-check-label" for="preference4">飲料</label>
+                </div>
+                <div class="form-check form-check-inline">
+                    <input class="form-check-input" type="checkbox" id="preference6" name="preferences6" value="水果">
+                    <label class="form-check-label" for="preference5">水果</label>
+                </div>
+                <div class="form-check form-check-inline">
+                    <input class="form-check-input" type="checkbox" id="preference7" name="preferences7" value="其他">
+                    <label class="form-check-label" for="preference6">其他</label>
+                </div>
+                <input type="text" id="other-preference" name="other-preference" placeholder="請輸入其他飲食偏好，用逗號分隔">
+            </div>
+        </div>
+
+        <button type="submit" id="register-button">註冊</button>
+    </form>
+		<a href="{{ url_for('Login') }}">已經有帳號了?前往登入</a>
+
+</div>
+
+<script>
+    // 手機號碼驗證
+    document.getElementById('phone').addEventListener('input', function() {
+        var phone = this.value;
+        var phoneRegex = /^09\d{8}$/;
+        if (!phoneRegex.test(phone)) {
+            document.getElementById('phone-error').style.display = 'inline';
+        } else {
+            document.getElementById('phone-error').style.display = 'none';
+        }
+    });
+
+    // 電子郵件驗證
+    document.getElementById('email').addEventListener('input', function() {
+        var email = this.value;
+        var emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(email)) {
+            document.getElementById('email-error').style.display = 'inline';
+        } else {
+            document.getElementById('email-error').style.display = 'none';
+        }
+    });
+
+      // 密碼規則驗證
+    document.getElementById('password').addEventListener('input', function() {
+        var password = this.value;
+        var passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{6,30}$/;
+        if (!passwordRegex.test(password)) {
+            document.getElementById('password-error').style.display = 'inline';
+        } else {
+            document.getElementById('password-error').style.display = 'none';
+        }
+    });
+    // 確認密碼一致性
+    document.getElementById('confirm-password').addEventListener('input', function() {
+        var password = document.getElementById('password').value;
+        var confirmPassword = this.value;
+        if (password !== confirmPassword) {
+            document.getElementById('confirm-password-error').style.display = 'inline';
+        } else {
+            document.getElementById('confirm-password-error').style.display = 'none';
+        }
+    });
+	
+	  // 顯示/隱藏密碼功能，針對兩個不同的密碼框
+    document.getElementById('show-password-1').addEventListener('change', function() {
+        var passwordField = document.getElementById('password');
+        if (this.checked) {
+            passwordField.type = 'text';
+        } else {
+            passwordField.type = 'password';
+        }
+    });
+
+    document.getElementById('show-password-2').addEventListener('change', function() {
+        var confirmPasswordField = document.getElementById('confirm-password');
+        if (this.checked) {
+            confirmPasswordField.type = 'text';
+        } else {
+            confirmPasswordField.type = 'password';
+        }
+    });
+
+
+    // 計算年齡
+    document.getElementById('birthdate').addEventListener('change', function() {
+        var birthdate = new Date(this.value);
+        var today = new Date();
+        var age = today.getFullYear() - birthdate.getFullYear();
+        var monthDifference = today.getMonth() - birthdate.getMonth();
+        if (monthDifference < 0 || (monthDifference === 0 && today.getDate() < birthdate.getDate())) {
+            age--;
+        }
+        document.getElementById('calculated-age').textContent = age + '歲';
+    });
+
+    // 計算BMI
+    function calculateBMI() {
+        var height = document.getElementById('height').value;
+        var weight = document.getElementById('weight').value;
+        if (height > 0 && weight > 0) {
+            var bmi = (weight / ((height / 100) * (height / 100))).toFixed(2);
+            document.getElementById('bmi').textContent = bmi;
+        } else {
+            document.getElementById('bmi').textContent = '請輸入身高和體重';
+        }
+    }
+
+    document.getElementById('height').addEventListener('input', calculateBMI);
+    document.getElementById('weight').addEventListener('input', calculateBMI);
+
+    // 過敏源 "其他" 顯示輸入框
+    document.getElementById('allergen12').addEventListener('change', function() {
+        var otherAllergenInput = document.getElementById('other-allergen');
+        if (this.checked) {
+            otherAllergenInput.style.display = 'block';
+        } else {
+            otherAllergenInput.style.display = 'none';
+            otherAllergenInput.value = ''; // 清空輸入框
+        }
+    });
+
+    // 飲食偏好 "其他" 顯示輸入框
+    document.getElementById('preference7').addEventListener('change', function() {
+        var otherPreferenceInput = document.getElementById('other-preference');
+        if (this.checked) {
+            otherPreferenceInput.style.display = 'block';
+        } else {
+            otherPreferenceInput.style.display = 'none';
+            otherPreferenceInput.value = ''; // 清空輸入框
+        }
+    });
+	
+	// 身份證字號驗證
+   document.getElementById('id-number').addEventListener('input', function() {
+    var idNumber = this.value;
+    var idNumberRegex = /^[A-Z]{1}[12]{1}[0-9]{8}$/;
+    if (!idNumberRegex.test(idNumber)) {
+        document.getElementById('id-number-error').style.display = 'inline';
+    } else {
+        document.getElementById('id-number-error').style.display = 'none';
+    }
+});
+
+    // 註冊按鈕點擊事件
+document.querySelector('form').addEventListener('submit', function(event) {
+    event.preventDefault();  // 防止表單的默認提交行為
+
+    // 收集表單數據
+    var formData = new FormData();
+    formData.append('phone', document.getElementById('phone').value);
+    formData.append('email', document.getElementById('email').value);
+    formData.append('confirmPassword', document.getElementById('confirm-password').value);
+    formData.append('realname', document.getElementById('realname').value);
+    formData.append('idNumber', document.getElementById('id-number').value);
+    formData.append('gender', document.querySelector('input[name="gender"]:checked') ? document.querySelector('input[name="gender"]:checked').value : '未選擇');
+    formData.append('birthdate', document.getElementById('birthdate').value);
+    formData.append('age', document.getElementById('calculated-age').textContent);
+    formData.append('height', document.getElementById('height').value);
+    formData.append('weight', document.getElementById('weight').value);
+    formData.append('bmi', document.getElementById('bmi').textContent);
+    formData.append('activityLevel', document.querySelector('input[name="activity-level"]:checked') ? document.querySelector('input[name="activity-level"]:checked').value : '未選擇');
+    formData.append('allergens', collectAllergens());
+    formData.append('preferences', collectPreferences());
+
+    // 發送數據到伺服器
+    fetch('https://8421-150-116-212-160.ngrok-free.app/submit-register', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.status === 'success') {
+            alert('註冊成功');
+        } else {
+            alert('註冊失敗，請檢查表單資料');
+        }
+    })
+    .catch(error => console.error('Error:', error));
+});
+
+
+// 驗證整個表單
+
+function validateForm() {
+    // 這裡使用 querySelectorAll 選擇所有包含 -error 的 ID 並且 style.display 為 inline 的元素
+    var errors = document.querySelectorAll('[id$="-error"]');
+    for (var i = 0; i < errors.length; i++) {
+        if (errors[i].style.display === 'inline') {
+            return false;  // 如果任何錯誤訊息顯示，返回 false
+        }
+    }
+    return true; // 如果沒有錯誤訊息顯示，返回 true
+}
+
+function collectFormData() {
+    var formData = {
+        phone: document.getElementById('phone').value,
+        email: document.getElementById('email').value,
+        confirmPassword: document.getElementById('confirm-password').value,
+        realname: document.getElementById('realname').value,
+        idNumber: document.getElementById('id-number').value,
+        gender: document.querySelector('input[name="gender"]:checked') ? document.querySelector('input[name="gender"]:checked').value : '未選擇',
+        birthdate: document.getElementById('birthdate').value,
+        age: document.getElementById('calculated-age').textContent,
+        height: document.getElementById('height').value,
+        weight: document.getElementById('weight').value,
+        bmi: document.getElementById('bmi').textContent,
+        activityLevel: document.querySelector('input[name="activity-level"]:checked') ? document.querySelector('input[name="activity-level"]:checked').value : '未選擇',
+        allergens: collectAllergens(),
+        preferences: collectPreferences()
+    };
+    return `使用者帳號: ${formData.phone}\n
+            電子信箱: ${formData.email}\n
+            確認密碼: ${formData.confirmPassword}\n
+            姓名: ${formData.realname}\n
+            身份證字號: ${formData.idNumber}\n
+            性別: ${formData.gender}\n
+            出生年月日: ${formData.birthdate}\n
+            年齡: ${formData.age}\n
+            身高: ${formData.height}公分\n
+            體重: ${formData.weight}公斤\n
+            BMI: ${formData.bmi}\n
+            活動量選擇: ${formData.activityLevel}\n
+            過敏源: ${formData.allergens}\n
+            飲食偏好: ${formData.preferences}`;
+}
+
+
+function collectAllergens() {
+    var allergens = Array.from(document.querySelectorAll('input[name="allergen"]:checked')).map(function(el) { return el.value; });
+    // 檢查是否選擇了 '其他'
+    if (allergens.includes('其他')) {
+        // 如果選擇了 '其他'，則添加來自文本輸入的自定義過敏源
+        var otherAllergen = document.getElementById('other-allergen').value;
+        allergens.pop(); // 移除 '其他'
+        if (otherAllergen) {
+            allergens.push(otherAllergen); // 添加自定義的過敏源
+        }
+    }
+    return allergens.join(', ') || '無';
+}
+
+function collectPreferences() {
+    var preferences = Array.from(document.querySelectorAll('input[name="preference"]:checked')).map(function(el) { return el.value; });
+    // 檢查是否選擇了 '其他'
+    if (preferences.includes('其他')) {
+        // 如果選擇了 '其他'，則添加來自文本輸入的自定義偏好
+        var otherPreference = document.getElementById('other-preference').value;
+        preferences.pop(); // 移除 '其他'
+        if (otherPreference) {
+            preferences.push(otherPreference); // 添加自定義的偏好
+        }
+    }
+    return preferences.join(', ') || '無';
+}
+
+</script>
+</body>
+</html>

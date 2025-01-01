@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #FFFCEC;
+        }
+
+        .container {
+            max-width: 290px;
+            margin: 50px auto;
+            background-color: #FFFFFF;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            font-size: 1.8em;
+            color: #4a473e;
+            margin-bottom: 1em;
+            text-align: center;
+        }
+		.recommendation-box {
+            padding: 15px;
+            background-color: #faf2eb;
+            border: 2px dashed #666;
+            border-radius: 15px;
+            text-align: center;
+            color: #333;
+            font-size: 1em;
+            margin-bottom: 20px;
+        }
+
+        .recommendation-box table {
+            width: 100%;
+            margin: 0 auto;
+        }
+
+        .recommendation-box th {
+            text-align: center;
+            padding-right: 5px;
+            color: #555;
+            font-weight: bold;
+        }
+
+        .recommendation-box td {
+            background-color:#FFF ;
+            text-align: center;
+            font-weight: bold;
+            padding: 5px 0;
+            color: #333;
+        }
+
+        .recommendation-box .unit {
+            background-color: transparent;
+            color: #555;
+            padding-left: 30px;
+            font-weight: normal;
+        }
+
+        .meal-box {
+            margin-bottom: 20px;
+            padding: 15px;
+            border-radius: 10px;
+            background-color: #FBFBFB;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+        }
+
+        .meal-box h2 {
+            font-size: 1.2em;
+            margin-bottom: 10px;
+            color: #444;
+            text-align: center;
+        }
+
+        .food-item {
+            margin-bottom: 10px;
+            position: relative;
+            padding: 10px;
+            border-radius: 8px;
+            background-color: #FFF;
+            border: 1px solid #EEE;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            text-align: center;
+        }
+
+        .food-item:hover {
+            background-color: #f4f2f2;
+        }
+
+        .food-item span {
+            display: block;
+            font-weight: bold;
+            color: #555;
+        }
+
+        .food-item .calories {
+            color: #999;
+            font-size: 0.9em;
+            margin-top: 5px;
+        }
+
+        .nutrition-info {
+            display: none;
+            padding: 10px;
+            border-radius: 5px;
+            margin-top: 10px;
+            font-size: 0.9em;
+            color: #FFF;
+            font-weight: bold;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            background-color: #d1cac4;
+        }
+
+        .food-source {
+            color: #984B4B;
+        }
+    </style>
+    <title>推薦菜單</title>
+</head>
+<body>
+    <div class="container">
+        <h1>推薦菜單</h1>
+		<!-- 營養建議區塊 -->
+        <div class="recommendation-box">
+            <p><strong>您的每日營養建議需求</strong></p>
+            <table>
+                <tr>
+                    <th>熱量：</th>
+                    <td>{{ standard.Energy }}</td>
+                    <td class="unit">(大卡)</td>
+                </tr>
+                <tr>
+                    <th>蛋白質：</th>
+                    <td>{{ standard.Protein }}</td>
+                    <td class="unit">(克)</td>
+                </tr>
+                <tr>
+                    <th>醣類：</th>
+                    <td>{{ standard.Carbohydrate }}</td>
+                    <td class="unit">(克)</td>
+                </tr>
+                <tr>
+                    <th>脂肪：</th>
+                    <td>{{ standard.Total_lipid_fat }}</td>
+                    <td class="unit">(克)</td>
+                </tr>
+            </table>
+        </div>
+		
+		<!-- 新增的重新推薦按鈕 -->
+		<div style="text-align: center; margin: 20px;">
+			<button onclick="refreshPage()" style="color: #984B4B; font-size: 1.5em; font-weight: bold; padding: 10px 20px;">重新推薦</button>
+		</div>
+		
+        <!-- 餐別生成區塊 -->
+        <div class="meal-box" id="breakfastBox">
+            <h2>早餐</h2>
+        </div>
+        <div class="meal-box" id="lunchBox">
+            <h2>午餐</h2>
+        </div>
+        <div class="meal-box" id="dinnerBox">
+            <h2>晚餐</h2>
+        </div>
+        <div class="meal-box" id="snackBox">
+            <h2>點心</h2>
+        </div>
+        <div class="meal-box" id="beverageBox">
+            <h2>飲品</h2>
+        </div>
+    </div>
+
+    <script>
+		// 重新推薦功能，重新載入頁面
+        function refreshPage() {
+            window.location.reload();
+        }
+        function createFoodItem(menuItem) {
+            const foodItemDiv = document.createElement('div');
+            foodItemDiv.classList.add('food-item');
+            foodItemDiv.setAttribute('onclick', 'toggleNutrition(this)');
+
+            foodItemDiv.innerHTML = `
+                <span class="food-name">${menuItem.Name}</span>
+                <span class="calories">熱量: 約 ${menuItem.Nutrients.Energy} 大卡</span>
+                <div class="nutrition-info">
+                    <p class="food-source">食物來源: <u>${menuItem.Source}</u></p>
+                    <p>蛋白質: ${menuItem.Nutrients.Protein} 克</p>
+                    <p>碳水: ${menuItem.Nutrients.Carbohydrate} 克</p>
+                    <p>脂肪: ${menuItem.Nutrients.Total_lipid_fat} 克</p>
+                </div>
+            `;
+
+            return foodItemDiv;
+        }
+
+        function renderMealMenu(menu, containerId) {
+            const container = document.getElementById(containerId);
+            for (let i = 0; i < menu.length; i++) {
+                if (menu[i] && menu[i].Name) {
+                    const foodItem = createFoodItem(menu[i]);
+                    container.appendChild(foodItem);
+                }
+            }
+        }
+
+        function toggleNutrition(element) {
+            const nutritionInfo = element.querySelector('.nutrition-info');
+            nutritionInfo.style.display = nutritionInfo.style.display === 'block' ? 'none' : 'block';
+        }
+
+        // 將 Python 模板引擎插入的資料動態插入到 JS 變數
+        const breakfast_menu = {{ breakfast_menu | safe }};
+        const lunch_menu = {{ lunch_menu | safe }};
+        const dinner_menu = {{ dinner_menu | safe }};
+        const snack_menu = {{ snack_menu | safe }};
+        const beverage_menu = {{ beverage_menu | safe }};
+
+        // 動態生成各餐別的內容
+        renderMealMenu(breakfast_menu, 'breakfastBox');
+        renderMealMenu(lunch_menu, 'lunchBox');
+        renderMealMenu(dinner_menu, 'dinnerBox');
+        renderMealMenu(snack_menu, 'snackBox');
+        renderMealMenu(beverage_menu, 'beverageBox');
+    </script>
+</body>
+</html>

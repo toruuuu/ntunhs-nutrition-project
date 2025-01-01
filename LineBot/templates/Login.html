@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<style>
+	body, html {
+		margin: 0;
+		padding: 0;
+		font-family: 'Arial', sans-serif;
+		background-color: #FFFCEC;/*鵝黃*/
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		height: 100vh;
+		text-align: center;
+	}
+
+	.container {
+		width: 90%;
+		max-width: 400px;
+		background: #ffffff;
+		padding: 40px;
+		border-radius: 10px;
+		box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+		position: relative;
+	}
+
+	.logo img {
+		width: 80%;
+		height: auto;
+		margin: 0 auto 20px;
+	}
+
+	h1 {
+		font-size: 1.5em;
+		color: #4a473e;
+		margin-bottom: 0.5em;
+	}
+
+	input[type="text"], input[type="password"], input[type="date"], select {
+		width: calc(100% - 20px);
+		padding: 10px;
+		margin: 10px 0;
+		border: 1px solid #ccc;
+		border-radius: 5px;
+	}
+
+	button {
+		width: 100%;
+		padding: 10px;
+		background-color: #8a817c;
+		color: white;
+		border: none;
+		border-radius: 5px;
+		cursor: pointer;
+		font-size: 16px;
+	}
+
+	button:hover {
+		background-color: #746e68;
+	}
+
+	.form-section {
+		text-align: left;
+		margin: 10px 0;
+	}
+
+	.form-section label {
+		display: block;
+		margin-bottom: 5px;
+		color: #4a473e;
+	}
+
+	a {
+		color: #4a473e;
+		text-decoration: underline;
+		display: block;
+		margin-top: 20px;
+	}
+    .error {
+        color: red;
+        font-size: 0.9em;
+        visibility: hidden; /* 使用 visibility 來保留佔位 */
+        height: 0;
+    }
+	</style>
+
+<!-- Favicon icon -->
+<link rel="icon" type="image/png" sizes="30x30" href="{{ url_for('static', filename='images/logoicon.png') }}">
+<title>登入</title>
+<script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+</head>
+<body>
+<div class="container">
+    <img src="{{ url_for('static', filename='images/logo.png') }}" alt="Logo">
+    <h1>BALANCE DIET 登入</h1>
+    <form action="/submit-login" method="POST" onsubmit="return validateForm()">
+        <input type="text" id="username" name="username" placeholder="請輸入手機號碼" required>
+        <div class="error" id="usernameError">手機號碼輸入格式不正確 (ex: 09XXXXXXXX)</div>
+        <input type="password" name="password" placeholder="密碼" required>
+		<input type="hidden" id="line_user_id" name="line_user_id" value="">
+        <button type="submit">登入</button>
+    </form>
+    <a href="{{ url_for('Register') }}">沒有帳號？註冊新帳戶</a>
+</div>
+
+<script>
+    const phoneInput = document.getElementById('username');
+    const errorDiv = document.getElementById('usernameError');
+    const phonePattern = /^09\d{8}$/;
+
+    // 當使用者輸入或失去焦點時進行檢查
+    phoneInput.addEventListener('input', validatePhone);
+    phoneInput.addEventListener('blur', validatePhone);
+
+    // 驗證手機號碼格式
+    function validatePhone() {
+        if (!phonePattern.test(phoneInput.value)) {
+            errorDiv.style.visibility = 'visible'; // 顯示錯誤提示
+            errorDiv.style.height = 'auto'; // 顯示錯誤佔位
+            return false; // 驗證失敗
+        } else {
+            errorDiv.style.visibility = 'hidden'; // 隱藏錯誤提示
+            errorDiv.style.height = '0'; // 隱藏錯誤佔位
+            return true; // 驗證通過
+        }
+    }
+
+    // 驗證整個表單，並阻止有錯誤時的提交
+    function validateForm() 
+	{
+        const isPhoneValid = validatePhone(); // 檢查電話號碼格式
+        if (!isPhoneValid) 
+		{
+            return false; // 如果手機號碼不正確，阻止表單提交
+        }
+        return true; // 所有驗證通過，允許提交表單
+    }
+	
+	
+// 初始化 LIFF
+        async function initializeLiff() {
+            try {
+                await liff.init({ liffId: "2006163998-1N4LxpBk" });
+
+                if (!liff.isLoggedIn()) {
+                    liff.login();
+                    return; // 登入後會自動重新整理
+                }
+
+                const profile = await liff.getProfile();
+                document.getElementById('line_user_id').value = profile.userId;
+            } catch (error) {
+                console.error("LIFF 初始化失敗:", error);
+            }
+        }
+
+        // 表單提交並與後端通訊
+        async function submitForm(event) {
+            event.preventDefault();  // 阻止表單的預設提交行為
+
+            const form = document.getElementById('login-form');
+            const formData = new FormData(form);
+
+            try {
+                const response = await fetch('/submit-login', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const result = await response.json();
+                if (result.status === 'success') {
+                    // 成功後關閉 LIFF 視窗
+                    liff.closeWindow();
+                } else {
+                    alert('登入失敗：' + result.message);
+                }
+            } catch (error) {
+                console.error('表單提交失敗:', error);
+                alert('系統錯誤，請稍後再試。');
+            }
+        }
+
+        // 頁面加載後初始化 LIFF
+        document.addEventListener('DOMContentLoaded', initializeLiff);
+</script>
+</body>
+</html>
+
