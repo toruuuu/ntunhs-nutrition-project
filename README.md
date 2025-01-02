@@ -28,4 +28,5 @@
 設定LineBot環境可參考：
 https://steam.oxxostudio.tw/category/python/example/line-developer.html#google_vignette
 #### GPT: opaiapi
+https://medium.com/@austinlaurice/openai-api-%E5%85%A5%E9%96%80-chat-endpoint-2282ae88c8f3
 需要付費取得token，製作專題時花費5美金，期間只使用不到0.5美金
